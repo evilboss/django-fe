@@ -10,7 +10,8 @@ export class AppLayout extends React.Component {
 		return (
 			<Layout>
 				<Header className="header">
-					<div className="logo"/>
+					<div className="logo">
+					</div>
 					<Menu
 						theme="dark"
 						mode="horizontal"
@@ -19,24 +20,29 @@ export class AppLayout extends React.Component {
 					>
 
 					</Menu>
+					<h1 style={{color: 'white'}}>Client Management</h1>
+
 				</Header>
+
 				<Layout>
-					<Sider width={200} style={{background: '#fff'}}>
+
+					<Sider width={200}>
 
 					</Sider>
 					<Layout style={{padding: '0 24px 24px'}}>
-					<Content
+						<Content
 							style={{
 								background: '#fff',
 								padding: 24,
 								margin: 0,
-								minHeight: 800,
+								minHeight: 900,
 							}}
 						>
 							{this.props.children}
 						</Content>
 					</Layout>
 				</Layout>
+				<footer style={{background: '#021529'}}>bla</footer>
 			</Layout>
 
 		)

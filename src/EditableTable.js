@@ -1,5 +1,6 @@
 import React from 'react';
-
+import axios from 'axios';
+import qs from 'qs';
 import {Table, Input, Button, Popconfirm, Form} from 'antd';
 
 const EditableContext = React.createContext();
@@ -25,6 +26,7 @@ class EditableCell extends React.Component {
 			}
 		});
 	};
+
 
 	save = e => {
 		const {record, handleSave} = this.props;
@@ -92,29 +94,54 @@ export class EditableTable extends React.Component {
 		super(props);
 		this.columns = [
 			{
-				title: 'name',
+				title: 'Client Name',
 				dataIndex: 'name',
 				width: '30%',
 				editable: true,
+				sorter: (a, b) => a.name.length - b.name.length,
+
+
 			},
 			{
-				title: 'age',
-				dataIndex: 'age',
+				title: 'Contact Name',
+				sorter: (a, b) => a.name.length - b.name.length,
+
+				dataIndex: 'contactName',
+				editable: true,
+
 			},
 			{
 				title: 'address',
+				sorter: (a, b) => a.name.length - b.name.length,
+
 				dataIndex: 'address',
+				editable: true,
+
 			},
 			{
-				title: 'address',
-				dataIndex: 'address',
+				title: 'Email',
+				dataIndex: 'emailAddress',
+				sorter: (a, b) => a.name.length - b.name.length,
+
+				editable: true,
+
+			},
+			{
+				title: 'Phone Number',
+				sorter: (a, b) => a.name.length - b.name.length,
+
+				dataIndex: 'phoneNumber',
+				editable: true,
+
 			},
 			{
 				title: 'operation',
 				dataIndex: 'operation',
 				render: (text, record) =>
+
 					this.state.dataSource.length >= 1 ? (
-						<Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
+
+						<Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.id)}>
 							<a>Delete</a>
 						</Popconfirm>
 					) : null,
@@ -122,47 +149,78 @@ export class EditableTable extends React.Component {
 		];
 
 		this.state = {
-			dataSource: [
-				{
-					key: '0',
-					name: 'Edward King 0',
-					age: '32',
-					address: 'London, Park Lane no. 0',
-				},
-				{
-					key: '1',
-					name: 'Edward King 1',
-					age: '32',
-					address: 'London, Park Lane no. 1',
-				},
-			],
-			count: 2,
+			dataSource: [],
+			count: 0,
 		};
 	}
 
-	componentDidMount() {
+	updateClient(id, data) {
+
+		axios.put(`http://localhost:8000/api/client/${id}/`, JSON.stringify(data), {headers: {'Content-Type': 'application/json'}}).then(res => {
+			console.log(res)
+		}).catch(err => {
+			console.error(err);
+		}).finally(() => {
+			this.getData();
+		});
+
+	}
+
+	deleteData(id) {
+		axios.delete(`http://localhost:8000/api/client/${id}`, {}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+			console.log(res)
+		}).catch(err => {
+			console.error(err);
+		}).finally(() => {
+			this.getData();
+
+		});
+	}
+
+	getData() {
 		fetch('http://localhost:8000/api/client/').then((response) => {
 			return response.json();
 		})
-			.then((data) => {
-				console.log(data);
+			.then((dataSource) => {
+				this.setState({dataSource})
 			});
+	}
+
+	componentDidMount() {
+		this.getData();
 
 	}
 
 	handleDelete = key => {
 		const dataSource = [...this.state.dataSource];
-		this.setState({dataSource: dataSource.filter(item => item.key !== key)});
+		this.deleteData(key);
+
 	};
+
+	addClient(data) {
+
+		axios.post(`http://localhost:8000/api/client/`, JSON.stringify(data), {headers: {'Content-Type': 'application/json'}}).then(res => {
+			console.log(res)
+		}).catch(err => {
+			console.error(err);
+		}).finally(() => {
+			this.getData();
+
+		});
+
+	}
+
 
 	handleAdd = () => {
 		const {count, dataSource} = this.state;
 		const newData = {
-			key: count,
-			name: `Edward King ${count}`,
-			age: 32,
-			address: `London, Park Lane no. ${count}`,
+			name: "APITEST",
+			contactName: "test apit",
+			address: "test",
+			emailAddress: "test@test.com",
+			phoneNumber: "12345"
 		};
+		this.addClient(newData);
 		this.setState({
 			dataSource: [...dataSource, newData],
 			count: count + 1,
@@ -170,14 +228,8 @@ export class EditableTable extends React.Component {
 	};
 
 	handleSave = row => {
-		const newData = [...this.state.dataSource];
-		const index = newData.findIndex(item => row.key === item.key);
-		const item = newData[index];
-		newData.splice(index, 1, {
-			...item,
-			...row,
-		});
-		this.setState({dataSource: newData});
+		console.log(row);
+		this.updateClient(row.id, row);
 	};
 
 	render() {
