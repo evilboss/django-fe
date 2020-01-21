@@ -1,8 +1,8 @@
 import React from 'react';
 import axios from 'axios';
-import qs from 'qs';
 import {Table, Input, Button, Popconfirm, Form, Icon} from 'antd';
 import Highlighter from 'react-highlight-words';
+import {NewClientForm} from './NewClientForm';
 
 const EditableContext = React.createContext();
 
@@ -149,7 +149,7 @@ export class EditableTable extends React.Component {
 					this.state.dataSource.length >= 1 ? (
 
 						<Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.id)}>
-							<a>Delete</a>
+							<a href>Delete</a>
 						</Popconfirm>
 					) : null,
 			},
@@ -158,6 +158,7 @@ export class EditableTable extends React.Component {
 		this.state = {
 			dataSource: [],
 			count: 0,
+			formOpen: false
 		};
 	}
 
@@ -265,13 +266,12 @@ export class EditableTable extends React.Component {
 	}
 
 	handleDelete = key => {
-		const dataSource = [...this.state.dataSource];
 		this.deleteData(key);
 
 	};
 
 	addClient(data) {
-
+		console.log('adding client1');
 		axios.post(`http://localhost:8000/api/client/`, JSON.stringify(data), {headers: {'Content-Type': 'application/json'}}).then(res => {
 			console.log(res)
 		}).catch(err => {
@@ -285,19 +285,20 @@ export class EditableTable extends React.Component {
 
 
 	handleAdd = () => {
-		const {count, dataSource} = this.state;
-		const newData = {
-			name: "APITEST",
-			contactName: "test apit",
-			address: "test",
-			emailAddress: "test@test.com",
-			phoneNumber: "12345"
-		};
-		this.addClient(newData);
-		this.setState({
-			dataSource: [...dataSource, newData],
-			count: count + 1,
-		});
+		this.setState({formOpen: true})
+		/*	const {count, dataSource} = this.state;
+			const newData = {
+				name: "APITEST",
+				contactName: "test apit",
+				address: "test",
+				emailAddress: "test@test.com",
+				phoneNumber: "12345"
+			};
+			this.addClient(newData);
+			this.setState({
+				dataSource: [...dataSource, newData],
+				count: count + 1,
+			});*/
 	};
 
 	handleSave = row => {
@@ -306,7 +307,7 @@ export class EditableTable extends React.Component {
 	};
 
 	render() {
-		const {dataSource} = this.state;
+		const {dataSource, formOpen} = this.state;
 		const components = {
 			body: {
 				row: EditableFormRow,
@@ -328,11 +329,22 @@ export class EditableTable extends React.Component {
 				}),
 			};
 		});
+
 		return (
 			<div>
-				<Button onClick={this.handleAdd} type="primary" style={{marginBottom: 16}}>
-					Add a row
-				</Button>
+				{formOpen ?
+					<NewClientForm cancel={() => {
+						this.setState({formOpen: false});
+					}} submit={(values) => {
+						this.addClient(values);
+						this.setState({formOpen: false});
+
+					}}/> : <Button onClick={this.handleAdd} type="primary" style={{marginBottom: 16}}>
+						Add a row
+					</Button>
+				}
+
+
 				<Table
 					components={components}
 					rowClassName={() => 'editable-row'}
